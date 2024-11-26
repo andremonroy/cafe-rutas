@@ -11,6 +11,14 @@
 </head>
 <body>
   <div id="map"></div>
+  <div id="filters" style="position: absolute; top: 10px; left: 10px; z-index: 1000; background: white; padding: 10px;">
+    <label for="finca">Fincas</label>
+    <input type="checkbox" id="finca" checked />
+    <label for="puerto">Puertos</label>
+    <input type="checkbox" id="puerto" checked />
+    <label for="aeropuerto">Aeropuertos</label>
+    <input type="checkbox" id="aeropuerto" checked />
+  </div>
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="script.js"></script>

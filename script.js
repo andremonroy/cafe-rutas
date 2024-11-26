@@ -6,30 +6,37 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
+// Almacén de marcadores por tipo
+let markers = {
+  finca: [],
+  puerto: [],
+  aeropuerto: []
+};
 
+// Almacén de rutas
+let routes = [];
 
 // Cargar y procesar el archivo CSV
 Papa.parse("puntos.csv", {
-  download: true, // Permite descargar el CSV directamente
-  header: true,   // Usa los nombres de las columnas como claves
-  skipEmptyLines: true, // Ignora líneas vacías
+  download: true,
+  header: true,   
+  skipEmptyLines: true, 
   complete: function(result) {
     const data = result.data;
-    console.log("Datos CSV cargados:", data); // Ver los datos cargados en consola
+    console.log("Datos CSV cargados:", data);
 
     if (data.length === 0) {
       console.error("Error: El archivo CSV está vacío o no contiene datos válidos.");
       return;
     }
 
+    // Limpiar las capas existentes antes de agregar nuevos marcadores
+    clearAllLayers(); // Limpiar todo antes de cargar nuevos marcadores
+
     // Iterar sobre cada fila del CSV y agregar un marcador al mapa
-    data.forEach((row, index) => {
+    data.forEach((row) => {
       const { Nombre, Lugar, Latitud, Longitud, Tipo } = row;
 
-      // Depurar para ver los datos de la fila actual
-      console.log(`Fila ${index}: ${Nombre}, ${Lugar}, Latitud: ${Latitud}, Longitud: ${Longitud}`);
-
-      // Verificar que las coordenadas son válidas
       if (Latitud && Longitud) {
         const lat = parseFloat(Latitud);
         const lng = parseFloat(Longitud);
@@ -39,7 +46,6 @@ Papa.parse("puntos.csv", {
           return;
         }
 
-        // Asignar un color al marcador según el tipo
         let iconColor;
         switch (Tipo) {
           case "Finca":
@@ -52,36 +58,58 @@ Papa.parse("puntos.csv", {
             iconColor = "red";
             break;
           default:
-            console.warn(`Advertencia: Tipo desconocido "${Tipo}" para "${Nombre}".`);
             iconColor = "gray";
         }
 
-        // Crear un marcador para cada punto con un círculo
+        // Crear un marcador
         const marker = L.circleMarker([lat, lng], {
           color: iconColor,
           radius: 8,
           fillOpacity: 0.8,
         });
 
-        // Agregar el marcador al mapa con una ventana emergente (popup)
-        marker
-          .addTo(map)
-          .bindPopup(`<b>${Nombre}</b><br>${Lugar}<br><i>Tipo:</i> ${Tipo}`);
+        marker.addTo(map).bindPopup(`<b>${Nombre}</b><br>${Lugar}<br><i>Tipo:</i> ${Tipo}`);
         
-      } else {
-        console.warn(`Advertencia: Las coordenadas de "${Nombre}" no están definidas.`);
+        // Guardar los marcadores por tipo
+        markers[Tipo.toLowerCase()].push(marker);
       }
     });
+
+    // Función para filtrar marcadores por tipo
+    function filterMarkers() {
+      const isFincaVisible = document.getElementById("finca").checked;
+      const isPuertoVisible = document.getElementById("puerto").checked;
+      const isAeropuertoVisible = document.getElementById("aeropuerto").checked;
+
+      // Mostrar u ocultar los marcadores según el filtro
+      markers.finca.forEach(marker => marker.setStyle({ opacity: isFincaVisible ? 1 : 0 }));
+      markers.puerto.forEach(marker => marker.setStyle({ opacity: isPuertoVisible ? 1 : 0 }));
+      markers.aeropuerto.forEach(marker => marker.setStyle({ opacity: isAeropuertoVisible ? 1 : 0 }));
+    }
+
+    // Añadir eventos de cambio de filtros
+    document.getElementById("finca").addEventListener("change", filterMarkers);
+    document.getElementById("puerto").addEventListener("change", filterMarkers);
+    document.getElementById("aeropuerto").addEventListener("change", filterMarkers);
+
+    // Filtrar marcadores al cargar
+    filterMarkers();
+
   },
   error: function(err) {
     console.error("Error al cargar el CSV:", err.message);
   },
 });
 
-Papa.parse(puntos.csv, {
-    complete: function(results) {
-        console.log("Datos del CSV:", results.data);  // Verifica cómo se cargan los datos
-        // Aquí puedes verificar que las coordenadas estén presentes en los resultados
-    },
-    header: true // Asegúrate de que esté activado para que se use la primera fila como encabezado
-});
+// Función para limpiar todas las capas (marcadores y rutas) del mapa
+function clearAllLayers() {
+  // Eliminar los marcadores
+  markers.finca.forEach(marker => marker.remove());
+  markers.puerto.forEach(marker => marker.remove());
+  markers.aeropuerto.forEach(marker => marker.remove());
+  markers = { finca: [], puerto: [], aeropuerto: [] }; // Limpiar los arrays de marcadores
+  
+  // Eliminar las rutas
+  routes.forEach(route => route.remove());
+  routes = []; // Limpiar las rutas
+}
