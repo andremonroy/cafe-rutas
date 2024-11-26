@@ -1,3 +1,4 @@
+<!--
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -22,5 +23,36 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="script.js"></script>
+</body>
+</html>
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Rutas</title>
+    <style>
+        #map {
+            height: 80vh;
+            width: 100%;
+        }
+        #controls {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label><input type="checkbox" id="finca" checked> Mostrar Fincas</label>
+        <label><input type="checkbox" id="puerto" checked> Mostrar Puertos</label>
+        <label><input type="checkbox" id="aeropuerto" checked> Mostrar Aeropuertos</label>
+    </div>
+    <div id="map"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqA0cdt7Q93a6Tj6z5EKCm3CG5z_7Uihg&callback=initMap&v=weekly" async defer></script>
+    <script src="apimaps.js"></script>
 </body>
 </html>
