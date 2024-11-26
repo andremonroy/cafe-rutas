@@ -8,6 +8,8 @@ let markers = {
   puerto: [],
   aeropuerto: [],
 };
+let directionsService;
+let directionsRenderer;
 
 // Inicializar el mapa
 function initMap() {
@@ -15,6 +17,13 @@ function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     center: { lat: 4.5709, lng: -74.2973 },
     zoom: 6,
+  });
+
+  // Inicializar el servicio y renderizador de direcciones
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({
+    map: map,
+    suppressMarkers: true, // Usaremos nuestros propios marcadores
   });
 
   // Cargar datos del archivo CSV
@@ -110,9 +119,46 @@ function initMap() {
 
       // Aplicar los filtros al cargar
       filterMarkers();
+
+      // Dibujar una ruta inicial (ejemplo: entre la primera finca y un puerto)
+      drawRoute("finca", "puerto", data);
     },
     error: function (err) {
       console.error("Error al cargar el archivo CSV:", err);
     },
+  });
+}
+
+// Función para calcular y dibujar rutas
+function drawRoute(fromType, toType, data) {
+  // Filtrar puntos de partida y destino
+  const fromPoints = data.filter((point) => point.Tipo.toLowerCase() === fromType);
+  const toPoints = data.filter((point) => point.Tipo.toLowerCase() === toType);
+
+  if (fromPoints.length === 0 || toPoints.length === 0) {
+    console.warn(`No se encontraron puntos de tipo ${fromType} o ${toType}.`);
+    return;
+  }
+
+  // Seleccionar los primeros puntos como ejemplo
+  const from = fromPoints[0];
+  const to = toPoints[0];
+
+  const origin = new google.maps.LatLng(parseFloat(from.Latitud), parseFloat(from.Longitud));
+  const destination = new google.maps.LatLng(parseFloat(to.Latitud), parseFloat(to.Longitud));
+
+  const request = {
+    origin: origin,
+    destination: destination,
+    travelMode: google.maps.TravelMode.DRIVING,
+  };
+
+  // Calcular la ruta
+  directionsService.route(request, (result, status) => {
+    if (status === google.maps.DirectionsStatus.OK) {
+      directionsRenderer.setDirections(result);
+    } else {
+      console.error("Error al calcular la ruta:", status);
+    }
   });
 }
